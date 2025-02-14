@@ -70,52 +70,91 @@ function Home() {
       return;
     }
 
-    // Set up message handler for receiving scores from the game iframe
-    window.addEventListener('message', async (event) => {
-      // Verify the origin matches one of your game URLs
-      const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
-      if (!gameUrls.includes(event.origin)) return;
+    try {
+      // Get a session token first
+      const sessionResponse = await fetch(`${API_URL}/api/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          wallet: publicKey.toString(),
+          game: gameKey,
+        }),
+      });
 
-      if (event.data.type === 'GAME_SCORE') {
-        const score = event.data.score;
-        console.log(`Received score from game: ${score}`);
-        
-        try {
-          // Create the message to sign
-          const message = `Submit score of ${score} for ${gameKey}`;
-          const encodedMessage = new TextEncoder().encode(message);
-          
-          // Sign the message
-          const signature = await signMessage(encodedMessage);
-          
-          // Submit the score
-          const response = await fetch(`${API_URL}/api/score`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              wallet: publicKey.toString(),
-              game: gameKey,
-              score: score,
-              signature: signature,
-              message: message
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          console.log('Score submitted successfully');
-        } catch (error) {
-          console.error('Error submitting score:', error);
-        }
+      if (!sessionResponse.ok) {
+        throw new Error(`HTTP error! status: ${sessionResponse.status}`);
       }
-    });
 
-    // Launch the game
-    setSelectedGameUrl(selectedGame.url);
+      const { sessionToken } = await sessionResponse.json();
+      setSessionToken(sessionToken);
+
+      // Set up message handler for receiving scores from the game iframe
+      const handleMessage = async (event: MessageEvent) => {
+        // Verify the origin matches one of your game URLs
+        const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
+        if (!gameUrls.includes(event.origin)) return;
+
+        if (event.data.type === 'GAME_SCORE') {
+          const score = event.data.score;
+          console.log(`Received score from game: ${score}`);
+          
+          try {
+            // Create the message to sign
+            const timestamp = Date.now();
+            const signatureMessage = `Game:${gameKey},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
+            const encodedMessage = new TextEncoder().encode(signatureMessage);
+            
+            // Sign the message
+            const signatureBytes = await signMessage(encodedMessage);
+            const clientSignature = bs58.encode(signatureBytes);
+            
+            // Submit the score with session token and signature
+            const response = await fetch(`${API_URL}/api/score`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                wallet: publicKey.toString(),
+                game: gameKey,
+                score: score,
+                sessionToken: sessionToken,
+                clientSignature: clientSignature,
+                signatureMessage: signatureMessage
+              }),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            }
+
+            console.log('Score submitted successfully');
+          } catch (error) {
+            console.error('Error submitting score:', error);
+          }
+        }
+      };
+
+      // Add the message listener
+      window.addEventListener('message', handleMessage);
+
+      // Launch the game
+      setSelectedGameUrl(selectedGame.url);
+
+      // Return cleanup function to remove event listener when game closes
+      return () => {
+        window.removeEventListener('message', handleMessage);
+        setSessionToken(null);
+      };
+
+    } catch (error) {
+      console.error("Error starting game session:", error);
+      // Even if session creation fails, we can still launch the game
+      setSelectedGameUrl(selectedGame.url);
+    }
   };
 
   // Listen for game finished event and submit the score along with a cryptographic signature
