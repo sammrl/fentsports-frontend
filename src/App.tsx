@@ -58,42 +58,64 @@ function Home() {
   const handleGameSelect = async (gameKey: string) => {
     console.log("Selected game:", gameKey);
     const selectedGame = games[gameKey];
-    
+
     if (!selectedGame) {
       console.error("Game not found:", gameKey);
       return;
     }
 
-    if (!publicKey) {
-      console.log("Wallet not connected");
+    if (!publicKey || !signMessage) {
+      console.log("Wallet not connected or signMessage not available");
+      setSelectedGameUrl(selectedGame.url);
       return;
     }
 
-    try {
-      // Directly attempt to create a session without a health check
-      const sessionResponse = await fetch(`${API_URL}/api/session`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          wallet: publicKey.toString(),
-          game: gameKey,
-        }),
-      });
+    // Set up message handler for receiving scores from the game iframe
+    window.addEventListener('message', async (event) => {
+      // Verify the origin matches one of your game URLs
+      const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
+      if (!gameUrls.includes(event.origin)) return;
 
-      if (!sessionResponse.ok) {
-        throw new Error(`HTTP error! status: ${sessionResponse.status}`);
+      if (event.data.type === 'GAME_SCORE') {
+        const score = event.data.score;
+        console.log(`Received score from game: ${score}`);
+        
+        try {
+          // Create the message to sign
+          const message = `Submit score of ${score} for ${gameKey}`;
+          const encodedMessage = new TextEncoder().encode(message);
+          
+          // Sign the message
+          const signature = await signMessage(encodedMessage);
+          
+          // Submit the score
+          const response = await fetch(`${API_URL}/api/score`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              wallet: publicKey.toString(),
+              game: gameKey,
+              score: score,
+              signature: signature,
+              message: message
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          console.log('Score submitted successfully');
+        } catch (error) {
+          console.error('Error submitting score:', error);
+        }
       }
+    });
 
-      const session = await sessionResponse.json();
-      setSessionToken(session.token);
-      setSelectedGameUrl(selectedGame.url);
-    } catch (error) {
-      console.error("Error starting game session:", error);
-      // Even if session creation fails, proceed to launch the game.
-      setSelectedGameUrl(selectedGame.url);
-    }
+    // Launch the game
+    setSelectedGameUrl(selectedGame.url);
   };
 
   // Listen for game finished event and submit the score along with a cryptographic signature
