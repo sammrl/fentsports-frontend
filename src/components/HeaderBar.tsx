@@ -18,7 +18,7 @@ export function HeaderBar() {
       {/* Middle: Navigation Links */}
       <nav className="flex space-x-8 ml-20">
         <a
-          href="https://twitter.com/yourprofile"
+          href="https://twitter.com/fentsports"
           className="text-white font-silkscreen hover:text-gray-300 transition-colors"
         >
           TWITTER
