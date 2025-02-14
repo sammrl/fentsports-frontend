@@ -119,11 +119,11 @@ interface ThreeDCarouselProps {
 }
 
 export function ThreeDCarousel({ onItemClick }: ThreeDCarouselProps) {
-  // Define your carousel items with a game key
+  // Define your carousel items with consistent game names
   const carouselItems: CarouselItem[] = [
-    { key: "game1", image: "/images/image1.png" },
-    { key: "game3", image: "/images/image3.png" },
-    { key: "game2", image: "/images/image2.png" },
+    { key: "FentMan", image: "/images/image1.png" },
+    { key: "FentFall", image: "/images/image3.png" },
+    { key: "FlappyFloyd", image: "/images/image2.png" },
   ];
 
   // Map over the items to create clickable carousel slides

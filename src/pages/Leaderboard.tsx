@@ -16,6 +16,18 @@ export function Leaderboard() {
   const { publicKey } = useWallet();
   const [bestScore, setBestScore] = useState<any>(null);
 
+  // Toggle state for leaderboard view mode: "current" or "alltime"
+  const [viewMode, setViewMode] = useState<'current' | 'alltime'>("current");
+
+  // Placeholder data for All Time leaderboard
+  const placeholderAllTimeScores = [
+    { name: "Alice", wallet: "0xAlice", score: 10000 },
+    { name: "Bob", wallet: "0xBob", score: 9000 },
+    { name: "Charlie", wallet: "0xCharlie", score: 8000 },
+    { name: "Dave", wallet: "0xDave", score: 7500 },
+    { name: "Eve", wallet: "0xEve", score: 7000 },
+  ];
+
   // Function to fetch leaderboard data for the current game
   const fetchLeaderboard = async () => {
     try {
@@ -50,15 +62,17 @@ export function Leaderboard() {
     }
   };
 
-  // Fetch leaderboard data when the current game changes
+  // Fetch leaderboard data when the current game or view mode changes (for current leaderboard)
   useEffect(() => {
-    fetchLeaderboard();
-    if (publicKey) {
-      fetchBestScore();
-    } else {
-      setBestScore(null);
+    if (viewMode === "current") {
+      fetchLeaderboard();
+      if (publicKey) {
+        fetchBestScore();
+      } else {
+        setBestScore(null);
+      }
     }
-  }, [currentGame, publicKey]);
+  }, [currentGame, publicKey, viewMode]);
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % games.length);
@@ -67,6 +81,9 @@ export function Leaderboard() {
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + games.length) % games.length);
   };
+
+  // Determine which scores to display based on view mode
+  const displayScores = viewMode === "current" ? scores : placeholderAllTimeScores;
 
   return (
     <div className="relative min-h-screen">
@@ -77,60 +94,101 @@ export function Leaderboard() {
           LEADERBOARD
         </h1>
 
-        <h2 className="font-silkscreen text-3xl text-white text-center mb-8">
+        <h2 className="font-silkscreen text-3xl text-white text-center mb-4">
           {currentGame}
+          {viewMode === "alltime" && " (All Time)"}
         </h2>
 
-        <div className="flex items-center gap-8">
-          <button 
-            onClick={handlePrev} 
-            className="font-silkscreen text-4xl text-white hover:text-[#ff2975] transition-colors"
+        {/* Retro styled toggle control */}
+        <div className="flex space-x-4 mb-8">
+          <button
+            onClick={() => setViewMode("current")}
+            className={`px-4 py-2 font-silkscreen text-lg border rounded-md transition-colors ${
+              viewMode === "current"
+                ? "bg-gradient-to-r from-[#ffd319] to-[#8c1eff] text-white"
+                : "bg-transparent text-white border-white hover:bg-white/10"
+            }`}
           >
-            ←
+            Current
           </button>
+          <button
+            onClick={() => setViewMode("alltime")}
+            className={`px-4 py-2 font-silkscreen text-lg border rounded-md transition-colors ${
+              viewMode === "alltime"
+                ? "bg-gradient-to-r from-[#ffd319] to-[#8c1eff] text-white"
+                : "bg-transparent text-white border-white hover:bg-white/10"
+            }`}
+          >
+            All Time
+          </button>
+        </div>
+
+        <div className="flex items-center gap-8">
+          {/* Only show carousel navigation for the current leaderboard */}
+          {viewMode === "current" && (
+            <button
+              onClick={handlePrev}
+              className="font-silkscreen text-4xl text-white hover:text-[#ff2975] transition-colors"
+            >
+              ←
+            </button>
+          )}
 
           <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden w-[400px]">
             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
               <table className="w-full">
                 <thead className="sticky top-0 bg-[#242424]/80 backdrop-blur-sm">
                   <tr className="border-b border-white/20">
-                    <th className="px-6 py-3 text-left text-lg font-silkscreen text-white">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-right text-lg font-silkscreen text-white">
-                      Score
-                    </th>
+                    <th className="px-6 py-3 text-left text-lg font-silkscreen text-white">#</th>
+                    <th className="px-6 py-3 text-left text-lg font-silkscreen text-white">User</th>
+                    <th className="px-6 py-3 text-right text-lg font-silkscreen text-white">Score</th>
                   </tr>
                 </thead>
                 <tbody>
                   {!publicKey ? (
-                    // When no wallet is connected, display a blinking message.
                     <tr className="bg-gradient-to-r from-gray-600 to-gray-800 animate-pulse text-white font-bold">
-                      <td colSpan={2} className="px-6 py-4 font-silkscreen text-center">
+                      <td colSpan={3} className="px-6 py-4 font-silkscreen text-center">
                         Connect your wallet to climb the leaderboard
                       </td>
                     </tr>
                   ) : (
-                    // When a wallet is connected, show the user's best score if available.
-                    bestScore ? (
+                    // For current mode, show the best score row if available
+                    viewMode === "current" && bestScore ? (
                       <tr className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold">
                         <td className="px-6 py-4 font-silkscreen">Your Best</td>
+                        <td className="px-6 py-4 font-silkscreen">{bestScore.name || "User"}</td>
                         <td className="px-6 py-4 font-silkscreen text-right">{bestScore.score}</td>
                       </tr>
-                    ) : (
+                    ) : viewMode === "current" && !bestScore ? (
                       <tr className="bg-gradient-to-r from-gray-400 to-gray-500 text-black font-bold">
-                        <td colSpan={2} className="px-6 py-4 font-silkscreen text-center">
+                        <td colSpan={3} className="px-6 py-4 font-silkscreen text-center">
                           No score yet
                         </td>
                       </tr>
-                    )
+                    ) : null
                   )}
-                  {scores.map((entry, idx) => (
+                  {displayScores.map((entry, idx) => (
                     <tr key={idx} className="border-b border-white/10 hover:bg-white/5">
                       <td className="px-6 py-4 font-silkscreen text-white">
-                        {entry.name
-                          ? entry.name
-                          : `${entry.wallet.slice(0, 6)}...`}
+                        {viewMode === "current" ? (
+                          idx < 10 ? (
+                            <span className="inline-flex items-center">
+                              <img
+                                src="/images/symbol.png"
+                                alt="symbol"
+                                className="w-4 h-4 mx-2"
+                              />
+                              <span className="w-10 block text-right">{idx + 1}</span>
+                            </span>
+                          ) : (
+                            <span className="block text-right w-10">{idx + 1}</span>
+                          )
+                        ) : (
+                          <span className="block text-right w-10">{idx + 1}</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 font-silkscreen text-white">
+                        {entry.name ? entry.name : `${entry.wallet.slice(0, 6)}...`}
                       </td>
                       <td className="px-6 py-4 font-silkscreen text-white text-right">
                         {entry.score}
@@ -142,16 +200,26 @@ export function Leaderboard() {
             </div>
           </div>
 
-          <button 
-            onClick={handleNext} 
-            className="font-silkscreen text-4xl text-white hover:text-[#ff2975] transition-colors"
-          >
-            →
-          </button>
+          {viewMode === "current" && (
+            <button
+              onClick={handleNext}
+              className="font-silkscreen text-4xl text-white hover:text-[#ff2975] transition-colors"
+            >
+              →
+            </button>
+          )}
         </div>
 
-        <Link 
-          to="/" 
+        {/* For current mode only, display the rewards info */}
+        {viewMode === "current" && (
+          <div className="flex items-center mt-4">
+            <img src="/images/symbol.png" alt="symbol" className="w-4 h-4 mx-2" />
+            <span className="font-silkscreen text-white">= qualifies for rewards!</span>
+          </div>
+        )}
+
+        <Link
+          to="/"
           className="mt-8 font-silkscreen text-white hover:text-[#ff2975] transition-colors"
         >
           Back to Home

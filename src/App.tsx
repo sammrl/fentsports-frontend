@@ -21,9 +21,9 @@ function Home() {
 
   // games with URL and game name 
   const games: Record<string, { url: string; name: string }> = {
-    game1: { url: "https://effortless-marshmallow-2f2b8c.netlify.app/", name: "FentMan" },
-    game3: { url: "https://amazing-sprinkles-bd617e.netlify.app/", name: "FentFall" },
-    game2: { url: "https://fastidious-florentine-b554ce.netlify.app/", name: "FlappyFloyd" },
+    FentMan: { url: "https://effortless-marshmallow-2f2b8c.netlify.app/", name: "FentMan" },
+    FentFall: { url: "https://amazing-sprinkles-bd617e.netlify.app/", name: "FentFall" },
+    FlappyFloyd: { url: "https://fastidious-florentine-b554ce.netlify.app/", name: "FlappyFloyd" },
   };
 
   // Check registration status on wallet connection
@@ -56,32 +56,43 @@ function Home() {
 
   // Handle game selection and request a session token from the backend
   const handleGameSelect = async (gameKey: string) => {
+    console.log("Selected game:", gameKey);
+    const selectedGame = games[gameKey];
+    
+    if (!selectedGame) {
+      console.error("Game not found:", gameKey);
+      return;
+    }
+
     if (!publicKey) {
-      console.log("No wallet connected");
+      console.log("Wallet not connected");
       return;
     }
-    if (!isRegistered) {
-      setShowRegistrationModal(true);
-      return;
-    }
-    const selectedGame = games[gameKey as keyof typeof games];
-    if (selectedGame) {
-      try {
-        const walletAddress = publicKey.toBase58();
-        const res = await fetch(`${API_URL}/api/session`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            wallet: walletAddress,
-            game: selectedGame.name,
-          }),
-        });
-        const data = await res.json();
-        setSessionToken(data.sessionToken);
-        setSelectedGameUrl(selectedGame.url);
-      } catch (err) {
-        console.error("Error starting game session:", err);
+
+    try {
+      // Directly attempt to create a session without a health check
+      const sessionResponse = await fetch(`${API_URL}/api/session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          wallet: publicKey.toString(),
+          game: gameKey,
+        }),
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error(`HTTP error! status: ${sessionResponse.status}`);
       }
+
+      const session = await sessionResponse.json();
+      setSessionToken(session.token);
+      setSelectedGameUrl(selectedGame.url);
+    } catch (error) {
+      console.error("Error starting game session:", error);
+      // Even if session creation fails, proceed to launch the game.
+      setSelectedGameUrl(selectedGame.url);
     }
   };
 
