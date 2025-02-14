@@ -1,0 +1,42 @@
+{
+  "type": "module",
+  "name": "fentsports",
+  "version": "1.0.0",
+  "description": "fent sports",
+  "main": "src/main.tsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "bs58": "^6.0.0",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongodb": "^6.13.0",
+    "mongoose": "^8.10.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-responsive-3d-carousel": "^2.1.5",
+    "react-router-dom": "^7.1.5",
+    "tailwind-merge": "^2.6.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.0",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.0",
+    "@vitejs/plugin-react": "^2.0.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.2",
+    "vite": "^3.0.0"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}

@@ -1,0 +1,9 @@
+.carousel-card {
+  z-index: 2;  /* Higher value to appear above other carousel elements */
+  position: relative;  /* z-index only works with positioned elements */
+}
+
+.carousel {
+  position: relative;  /* Create stacking context */
+  z-index: 1;  /* Lower value than cards */
+} 
