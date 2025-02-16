@@ -183,7 +183,7 @@ export function ThreeDCarousel({ onItemClick }: ThreeDCarouselProps) {
 
   return (
     <div 
-      className="fixed inset-0 flex justify-center items-center mt-16 bg-transparent z-30 pointer-events-auto"
+      className="fixed inset-0 flex justify-center items-center mt-40 bg-transparent z-30 pointer-events-auto"
       style={{ 
         pointerEvents: 'auto',
         height: '600px' // Adjust container height to accommodate the carousel

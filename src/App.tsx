@@ -14,9 +14,9 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // After your games configuration (around line 27)
 const GAME_SECRETS: Record<string, string> = {
-  FentMan: process.env.VITE_FENTMAN_SECRET || 'default_secret_1',
-  FentFall: process.env.VITE_FENTFALL_SECRET || 'default_secret_2',
-  FentaPiller: process.env.VITE_FENTAPILLER_SECRET || 'default_secret_3',
+  FentMan: import.meta.env.VITE_FENTMAN_SECRET || "default_secret_1",
+  FentFall: import.meta.env.VITE_FENTFALL_SECRET || "default_secret_2",
+  FentaPiller: import.meta.env.VITE_FENTAPILLER_SECRET || "default_secret_3",
 };
 
 function Home() {
@@ -29,7 +29,7 @@ function Home() {
   // games with URL and game name 
   const games: Record<string, { url: string; name: string }> = {
     FentMan: { url: "https://effortless-marshmallow-2f2b8c.netlify.app/", name: "FentMan" },
-    FentFall: { url: "https://amazing-sprinkles-bd617e.netlify.app/", name: "FentFall" },
+    FentFall: { url: "https://wonderful-brioche-ef39ad.netlify.app/", name: "FentFall" },
     FentaPiller: { url: "https://benevolent-eclair-4b23fd.netlify.app/", name: "FentaPiller" },
   };
 
