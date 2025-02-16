@@ -12,7 +12,6 @@ import { UserRegistrationModal } from "./components/UserRegistrationModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// After your games configuration (around line 27)
 const GAME_SECRETS: Record<string, string> = {
   FentMan: import.meta.env.VITE_FENTMAN_SECRET || "default_secret_1",
   FentFall: import.meta.env.VITE_FENTFALL_SECRET || "default_secret_2",
@@ -167,8 +166,9 @@ function Home() {
   // Listen for game finished event and submit the score along with a cryptographic signature
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      if (event.data && event.data.type === "GAME_FINISHED") {
-        const { score, game, timestamp, signature } = event.data;
+      // Check if it's a game message
+      if (event.data && (event.data.type === "GAME_FINISHED" || event.data.type === "GAME_SCORE")) {
+        const { score, game } = event.data;
         
         // Verify the game origin
         const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
@@ -180,8 +180,15 @@ function Home() {
         if (publicKey && sessionToken && signMessage) {
           const walletAddress = publicKey.toBase58();
           try {
-            const signatureBytes = await signMessage(new TextEncoder().encode(signature));
+            // Create the message to sign
+            const timestamp = Date.now();
+            const signatureMessage = `Game:${game},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
+            const encodedMessage = new TextEncoder().encode(signatureMessage);
+            
+            // Sign the message
+            const signatureBytes = await signMessage(encodedMessage);
             const clientSignature = bs58.encode(signatureBytes);
+
             const response = await fetch(`${API_URL}/api/score`, {
               method: "POST",
               headers: {
@@ -194,9 +201,10 @@ function Home() {
                 score,
                 sessionToken,
                 clientSignature,
-                signatureMessage: signature,
+                signatureMessage
               }),
             });
+            
             if (!response.ok) {
               const errorText = await response.text();
               console.error("Failed to save score:", errorText);
@@ -211,9 +219,10 @@ function Home() {
         }
       }
     };
+    
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [publicKey, sessionToken, signMessage]);
+  }, [publicKey, sessionToken, signMessage, games]);
 
   return (
     <div className="relative">
