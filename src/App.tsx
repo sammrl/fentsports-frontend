@@ -28,8 +28,8 @@ function Home() {
   // games with URL and game name 
   const games: Record<string, { url: string; name: string }> = {
     FentMan: { url: "https://effortless-marshmallow-2f2b8c.netlify.app/", name: "FentMan" },
-    FentFall: { url: "https://wonderful-brioche-ef39ad.netlify.app/", name: "FentFall" },
-    FentaPiller: { url: "https://benevolent-eclair-4b23fd.netlify.app/", name: "FentaPiller" },
+    FentFall: { url: "https://eloquent-cascaron-0d6d10.netlify.app/", name: "FentFall" },
+    FentaPiller: { url: "https://delicate-fox-bec4e2.netlify.app/", name: "FentaPiller" },
   };
 
   // Check registration status on wallet connection
@@ -96,9 +96,9 @@ function Home() {
       const { sessionToken } = await sessionResponse.json();
       setSessionToken(sessionToken);
 
-      // Set up message handler for receiving scores from the game iframe
+
       const handleMessage = async (event: MessageEvent) => {
-        // Verify the origin matches one of your game URLs
+
         const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
         if (!gameUrls.includes(event.origin)) return;
 
@@ -107,16 +107,12 @@ function Home() {
           console.log(`Received score from game: ${score}`);
           
           try {
-            // Create the message to sign
+
             const timestamp = Date.now();
             const signatureMessage = `Game:${gameKey},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
             const encodedMessage = new TextEncoder().encode(signatureMessage);
-            
-            // Sign the message
             const signatureBytes = await signMessage(encodedMessage);
             const clientSignature = bs58.encode(signatureBytes);
-            
-            // Submit the score with session token and signature
             const response = await fetch(`${API_URL}/api/score`, {
               method: 'POST',
               headers: {
@@ -144,13 +140,9 @@ function Home() {
         }
       };
 
-      // Add the message listener
       window.addEventListener('message', handleMessage);
-
-      // Launch the game
       setSelectedGameUrl(selectedGame.url);
 
-      // Return cleanup function to remove event listener when game closes
       return () => {
         window.removeEventListener('message', handleMessage);
         setSessionToken(null);
@@ -163,16 +155,14 @@ function Home() {
     }
   };
 
-  // Listen for game finished event and submit the score along with a cryptographic signature
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
-      // Check if it's a game message
       if (event.data && (event.data.type === "GAME_FINISHED" || event.data.type === "GAME_SCORE")) {
         const { score, game } = event.data;
         
-        // Verify the game origin
         const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
-        if (!gameUrls.includes(event.origin)) {
+        const allowedOrigins = [...gameUrls, 'null']; // Allow 'null' origin for local development
+        if (!allowedOrigins.includes(event.origin)) {
           console.error('Invalid origin:', event.origin);
           return;
         }
@@ -180,12 +170,10 @@ function Home() {
         if (publicKey && sessionToken && signMessage) {
           const walletAddress = publicKey.toBase58();
           try {
-            // Create the message to sign
             const timestamp = Date.now();
             const signatureMessage = `Game:${game},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
             const encodedMessage = new TextEncoder().encode(signatureMessage);
             
-            // Sign the message
             const signatureBytes = await signMessage(encodedMessage);
             const clientSignature = bs58.encode(signatureBytes);
 
@@ -246,7 +234,7 @@ function Home() {
           gameUrl={selectedGameUrl}
           onClose={() => {
             setSelectedGameUrl(null);
-            setSessionToken(null); // clear session token when game modal closes
+            setSessionToken(null); 
           }}
         />
       )}
@@ -258,9 +246,9 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Home route: shows your main game view */}
+        {/* Home route */}
         <Route path="/" element={<Home />} />
-        {/* Leaderboard route: shows the leaderboard page */}
+        {/* Leaderboard route */}
         <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </BrowserRouter>

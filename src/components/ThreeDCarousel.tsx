@@ -144,11 +144,20 @@ interface ThreeDCarouselProps {
 }
 
 export function ThreeDCarousel({ onItemClick }: ThreeDCarouselProps) {
-  // Define your carousel items with consistent game names
+  // Update carousel items to use Firebase Storage CDN URLs
   const carouselItems: CarouselItem[] = [
-    { key: "FentMan", image: "/images/image1.png" },
-    { key: "FentFall", image: "/images/image2.png" },
-    { key: "FentaPiller", image: "/images/image3.png" },
+    { 
+      key: "FentMan", 
+      image: "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fimage1.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f" 
+    },
+    { 
+      key: "FentFall", 
+      image: "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fimage2.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f" 
+    },
+    { 
+      key: "FentaPiller", 
+      image: "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fimage3.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f" 
+    },
   ];
 
   // Map over the items to create clickable carousel slides

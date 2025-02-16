@@ -4,7 +4,7 @@ import { RetroGrid } from "../components/ui/RetroGrid";
 import { Link } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-// Define the games you support
+
 const games = ['FentMan', 'FentFall', 'FentaPiller'];
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -174,7 +174,7 @@ export function Leaderboard() {
                           idx < 10 ? (
                             <span className="inline-flex items-center">
                               <img
-                                src="/images/symbol.png"
+                                src="https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fsymbol.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f"
                                 alt="symbol"
                                 className="w-4 h-4 mx-2"
                               />
@@ -213,7 +213,11 @@ export function Leaderboard() {
         {/* For current mode only, display the rewards info */}
         {viewMode === "current" && (
           <div className="flex items-center mt-4">
-            <img src="/images/symbol.png" alt="symbol" className="w-4 h-4 mx-2" />
+            <img 
+              src="https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fsymbol.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f" 
+              alt="symbol" 
+              className="w-4 h-4 mx-2" 
+            />
             <span className="font-silkscreen text-white">= qualifies for rewards!</span>
           </div>
         )}

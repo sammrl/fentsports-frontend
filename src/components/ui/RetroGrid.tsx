@@ -41,12 +41,19 @@ export function RetroGrid({
 
   return (
     <div className="fixed inset-0 flex h-screen w-screen flex-col items-center justify-start overflow-hidden bg-background" style={gridStyles}>
-      {/* Title Text with Silkscreen Font */}
+      {/* Title Text with Silkscreen Font and Logo */}
       {showTitle && (
         <>
-          <span className="pointer-events-none z-20 font-silkscreen whitespace-pre-wrap bg-gradient-to-b from-[#ffd319] via-[#ff2975] to-[#8c1eff] bg-clip-text text-center text-7xl font-bold leading-none tracking-tighter text-transparent" style={{ paddingTop: 'calc(var(--title-padding) + 2rem)' }}>
-            FENT SPORTS
-          </span>
+          <div className="flex items-center justify-center gap-4" style={{ paddingTop: 'calc(var(--title-padding) + 2rem)' }}>
+            <span className="pointer-events-none z-20 font-silkscreen whitespace-pre-wrap bg-gradient-to-b from-[#ffd319] via-[#ff2975] to-[#8c1eff] bg-clip-text text-center text-7xl font-bold leading-none tracking-tighter text-transparent">
+              FENT SPORTS
+            </span>
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Flogo.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f"
+              alt="Logo"
+              className="w-20 h-20 object-contain z-20"
+            />
+          </div>
           
           {/* Subheading */}
           <span className="pointer-events-none z-20 font-silkscreen text-white text-xl mt-4 text-center">
