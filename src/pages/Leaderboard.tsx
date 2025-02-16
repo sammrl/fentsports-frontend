@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { useWallet } from "@solana/wallet-adapter-react";
 
 // Define the games you support
-const games = ['FentMan', 'FentFall', 'FlappyFloyd'];
+const games = ['FentMan', 'FentFall', 'FentaPiller'];
 
 const API_URL = import.meta.env.VITE_API_URL;
 

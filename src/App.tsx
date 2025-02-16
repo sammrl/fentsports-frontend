@@ -12,6 +12,13 @@ import { UserRegistrationModal } from "./components/UserRegistrationModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// After your games configuration (around line 27)
+const GAME_SECRETS: Record<string, string> = {
+  FentMan: process.env.VITE_FENTMAN_SECRET || 'default_secret_1',
+  FentFall: process.env.VITE_FENTFALL_SECRET || 'default_secret_2',
+  FentaPiller: process.env.VITE_FENTAPILLER_SECRET || 'default_secret_3',
+};
+
 function Home() {
   const [selectedGameUrl, setSelectedGameUrl] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
@@ -23,7 +30,7 @@ function Home() {
   const games: Record<string, { url: string; name: string }> = {
     FentMan: { url: "https://effortless-marshmallow-2f2b8c.netlify.app/", name: "FentMan" },
     FentFall: { url: "https://amazing-sprinkles-bd617e.netlify.app/", name: "FentFall" },
-    FlappyFloyd: { url: "https://fastidious-florentine-b554ce.netlify.app/", name: "FlappyFloyd" },
+    FentaPiller: { url: "https://benevolent-eclair-4b23fd.netlify.app/", name: "FentaPiller" },
   };
 
   // Check registration status on wallet connection
@@ -161,15 +168,19 @@ function Home() {
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
       if (event.data && event.data.type === "GAME_FINISHED") {
-        const { score, game } = event.data;
-        console.log("Final score received from game:", score);
+        const { score, game, timestamp, signature } = event.data;
+        
+        // Verify the game origin
+        const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
+        if (!gameUrls.includes(event.origin)) {
+          console.error('Invalid origin:', event.origin);
+          return;
+        }
+
         if (publicKey && sessionToken && signMessage) {
           const walletAddress = publicKey.toBase58();
-          const timestamp = Date.now();
-          // Create a message string that includes game, score, session token, and timestamp.
-          const signatureMessage = `Game:${game},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
           try {
-            const signatureBytes = await signMessage(new TextEncoder().encode(signatureMessage));
+            const signatureBytes = await signMessage(new TextEncoder().encode(signature));
             const clientSignature = bs58.encode(signatureBytes);
             const response = await fetch(`${API_URL}/api/score`, {
               method: "POST",
@@ -183,7 +194,7 @@ function Home() {
                 score,
                 sessionToken,
                 clientSignature,
-                signatureMessage,
+                signatureMessage: signature,
               }),
             });
             if (!response.ok) {
