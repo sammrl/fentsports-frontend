@@ -107,6 +107,31 @@ const hideDotsAndIndexStyle = `
     transform: rotate(30deg);
     pointer-events: none;
   }
+
+  .react-3d-carousel .slider-single-content {
+    width: 600px !important;  // Half of 1200px for better fit
+    height: 400px !important; // Half of 800px for better fit
+    margin: 0 auto;
+  }
+
+  .react-3d-carousel .slider-single {
+    width: 600px !important;
+    height: 400px !important;
+  }
+
+  .react-3d-carousel img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 20px;
+  }
+
+  // Keep your existing styles but update the container
+  .react-3d-carousel .slider-container {
+    padding: 0 !important;
+    width: 100% !important;
+    height: 500px !important; // Give extra space for 3D effect
+  }
 `;
 
 interface CarouselItem {
@@ -158,8 +183,11 @@ export function ThreeDCarousel({ onItemClick }: ThreeDCarouselProps) {
 
   return (
     <div 
-      className="fixed inset-0 flex justify-center items-center mt-32 bg-transparent z-30 pointer-events-auto"
-      style={{ pointerEvents: 'auto' }}
+      className="fixed inset-0 flex justify-center items-center mt-16 bg-transparent z-30 pointer-events-auto"
+      style={{ 
+        pointerEvents: 'auto',
+        height: '600px' // Adjust container height to accommodate the carousel
+      }}
     >
       <style>{hideDotsAndIndexStyle}</style>
       {items.length > 0 ? (
