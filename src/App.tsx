@@ -68,7 +68,93 @@ function Home() {
     checkRegistration();
   }, [publicKey]);
 
-  // Handle game selection and request a session token from the backend
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      // Log the received event so we know if the game is posting messages at all
+      console.log("Received message event:", { origin: event.origin, data: event.data });
+
+      // Try to parse game URLs from your games array
+      const gameUrls = Object.values(games).map(g => {
+        try {
+          return new URL(g.url).origin;
+        } catch (e) {
+          console.error("Error parsing game url for:", g);
+          return "";
+        }
+      });
+
+      // For local development, add extra allowed origins
+      const allowedOrigins = [...gameUrls, 'null', 'http://localhost', 'http://localhost:3000'];
+      if (!allowedOrigins.includes(event.origin)) {
+        console.error('Rejected message from invalid origin:', event.origin, 'Allowed origins:', allowedOrigins);
+        return;
+      }
+
+      // Handle both GAME_SCORE and GAME_FINISHED events
+      if (event.data && (event.data.type === "GAME_SCORE" || event.data.type === "GAME_FINISHED")) {
+        console.log("Processing game score event:", event.data);
+        
+        if (!publicKey || !sessionToken || !signMessage) {
+          console.log("Missing required credentials:", {
+            hasPublicKey: !!publicKey,
+            hasSessionToken: !!sessionToken,
+            hasSignMessage: !!signMessage
+          });
+          return;
+        }
+
+        const walletAddress = publicKey.toBase58();
+        try {
+          const timestamp = Date.now();
+          const score = event.data.score;
+          const game = event.data.game || Object.keys(games).find(key => games[key].url.includes(event.origin)) || "";
+          
+          console.log("Preparing score submission:", { game, score, wallet: walletAddress });
+
+          const signatureMessage = `Game:${game},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
+          const encodedMessage = new TextEncoder().encode(signatureMessage);
+          const signatureBytes = await signMessage(encodedMessage);
+          const clientSignature = bs58.encode(signatureBytes);
+
+          console.log("Submitting score to API...");
+          const response = await fetch(`${API_URL}/api/score`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({
+              wallet: walletAddress,
+              game,
+              score,
+              sessionToken,
+              clientSignature,
+              signatureMessage,
+            }),
+          });
+
+          const responseText = await response.text();
+          console.log("API Response:", response.status, responseText);
+
+          if (!response.ok) {
+            throw new Error(`Failed to save score: ${responseText}`);
+          }
+
+          console.log("Score saved successfully for game:", game);
+          if (!shareData) {
+            setShareData({ score, game });
+          }
+        } catch (err) {
+          console.error("Error submitting score:", err);
+        }
+      }
+    };
+    
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [publicKey, sessionToken, signMessage, games, shareData]);
+
+  // Remove the handleMessage from handleGameSelect
   const handleGameSelect = async (gameKey: string) => {
     console.log("Selected game:", gameKey);
     const selectedGame = games[gameKey];
@@ -86,7 +172,6 @@ function Home() {
     }
 
     try {
-      // Get a session token first
       const sessionResponse = await fetch(`${API_URL}/api/session`, {
         method: 'POST',
         headers: {
@@ -102,130 +187,14 @@ function Home() {
         throw new Error(`HTTP error! status: ${sessionResponse.status}`);
       }
 
-      const { sessionToken } = await sessionResponse.json();
-      setSessionToken(sessionToken);
-
-
-      const handleMessage = async (event: MessageEvent) => {
-
-        const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
-        if (!gameUrls.includes(event.origin)) return;
-
-        if (event.data.type === 'GAME_SCORE') {
-          const score = event.data.score;
-          console.log(`Received score from game: ${score}`);
-          
-          try {
-
-            const timestamp = Date.now();
-            const signatureMessage = `Game:${gameKey},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
-            const encodedMessage = new TextEncoder().encode(signatureMessage);
-            const signatureBytes = await signMessage(encodedMessage);
-            const clientSignature = bs58.encode(signatureBytes);
-            const response = await fetch(`${API_URL}/api/score`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                wallet: publicKey.toString(),
-                game: gameKey,
-                score: score,
-                sessionToken: sessionToken,
-                clientSignature: clientSignature,
-                signatureMessage: signatureMessage
-              }),
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-            }
-
-            console.log('Score submitted successfully');
-            // NEW: Set share data immediately after successful score submission
-            setShareData({ score, game: gameKey });
-          } catch (error) {
-            console.error('Error submitting score:', error);
-          }
-        }
-      };
-
-      window.addEventListener('message', handleMessage);
+      const { sessionToken: newSessionToken } = await sessionResponse.json();
+      setSessionToken(newSessionToken);
       setSelectedGameUrl(selectedGame.url);
-
-      return () => {
-        window.removeEventListener('message', handleMessage);
-        setSessionToken(null);
-      };
-
     } catch (error) {
       console.error("Error starting game session:", error);
-      // Even if session creation fails, we can still launch the game
       setSelectedGameUrl(selectedGame.url);
     }
   };
-
-  useEffect(() => {
-    const handleMessage = async (event: MessageEvent) => {
-      if (event.data && (event.data.type === "GAME_FINISHED" || event.data.type === "GAME_SCORE")) {
-        const { score, game } = event.data;
-        
-        const gameUrls = Object.values(games).map(g => new URL(g.url).origin);
-        const allowedOrigins = [...gameUrls, 'null']; // Allow 'null' origin for local development
-        if (!allowedOrigins.includes(event.origin)) {
-          console.error('Invalid origin:', event.origin);
-          return;
-        }
-
-        if (publicKey && sessionToken && signMessage) {
-          const walletAddress = publicKey.toBase58();
-          try {
-            const timestamp = Date.now();
-            const signatureMessage = `Game:${game},Score:${score},Session:${sessionToken},Timestamp:${timestamp}`;
-            const encodedMessage = new TextEncoder().encode(signatureMessage);
-            
-            const signatureBytes = await signMessage(encodedMessage);
-            const clientSignature = bs58.encode(signatureBytes);
-
-            const response = await fetch(`${API_URL}/api/score`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              credentials: "include",
-              body: JSON.stringify({
-                wallet: walletAddress,
-                game: game,
-                score,
-                sessionToken,
-                clientSignature,
-                signatureMessage
-              }),
-            });
-            
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error("Failed to save score:", errorText);
-            } else {
-              console.log("Score saved successfully for game:", game);
-              // NEW: Set share data on successful score submission if not already set
-              if (!shareData) {
-                setShareData({ score, game });
-              }
-            }
-          } catch (err) {
-            console.error("Error submitting score:", err);
-          }
-        } else {
-          console.log("Either wallet not connected, session missing, or signMessage unavailable; score not saved.");
-        }
-      }
-    };
-    
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [publicKey, sessionToken, signMessage, games, shareData]);
 
   // NEW: Function to get the placard image URL based on game key
   function getPlacardForGame(game: string): string {
