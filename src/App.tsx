@@ -9,6 +9,7 @@ import { Leaderboard } from "./pages/Leaderboard";
 import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
+import { OfflineWarningModal } from "./components/OfflineWarningModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -21,6 +22,8 @@ const GAME_SECRETS: Record<string, string> = {
 function Home() {
   const [selectedGameUrl, setSelectedGameUrl] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [showOfflineWarning, setShowOfflineWarning] = useState(false);
+  const [pendingGameUrl, setPendingGameUrl] = useState<string | null>(null);
   const { publicKey, signMessage } = useWallet();
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
@@ -72,7 +75,8 @@ function Home() {
 
     if (!publicKey || !signMessage) {
       console.log("Wallet not connected or signMessage not available");
-      setSelectedGameUrl(selectedGame.url);
+      setPendingGameUrl(selectedGame.url);
+      setShowOfflineWarning(true);
       return;
     }
 
@@ -235,6 +239,19 @@ function Home() {
           onClose={() => {
             setSelectedGameUrl(null);
             setSessionToken(null); 
+          }}
+        />
+      )}
+      {showOfflineWarning && pendingGameUrl && (
+        <OfflineWarningModal
+          onContinue={() => {
+            setSelectedGameUrl(pendingGameUrl);
+            setShowOfflineWarning(false);
+            setPendingGameUrl(null);
+          }}
+          onCancel={() => {
+            setShowOfflineWarning(false);
+            setPendingGameUrl(null);
           }}
         />
       )}
