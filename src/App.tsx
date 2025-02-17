@@ -10,6 +10,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
 import { OfflineWarningModal } from "./components/OfflineWarningModal";
+import { ShareConfirmModal } from "./components/ShareConfirmModal";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -27,6 +28,10 @@ function Home() {
   const { publicKey, signMessage } = useWallet();
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);
+
+  // NEW: State for share data and confirmation modal
+  const [shareData, setShareData] = useState<{ score: number; game: string } | null>(null);
+  const [showShareConfirm, setShowShareConfirm] = useState(false);
 
   // games with URL and game name 
   const games: Record<string, { url: string; name: string }> = {
@@ -138,6 +143,8 @@ function Home() {
             }
 
             console.log('Score submitted successfully');
+            // NEW: Set share data immediately after successful score submission
+            setShareData({ score, game: gameKey });
           } catch (error) {
             console.error('Error submitting score:', error);
           }
@@ -202,6 +209,10 @@ function Home() {
               console.error("Failed to save score:", errorText);
             } else {
               console.log("Score saved successfully for game:", game);
+              // NEW: Set share data on successful score submission if not already set
+              if (!shareData) {
+                setShareData({ score, game });
+              }
             }
           } catch (err) {
             console.error("Error submitting score:", err);
@@ -214,7 +225,51 @@ function Home() {
     
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [publicKey, sessionToken, signMessage, games]);
+  }, [publicKey, sessionToken, signMessage, games, shareData]);
+
+  // NEW: Function to get the placard image URL based on game key
+  function getPlacardForGame(game: string): string {
+    if (game === "FentMan") {
+      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame1.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+    } else if (game === "FentFall") {
+      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame2.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+    } else if (game === "FentaPiller") {
+      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame3.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+    }
+    return "";
+  }
+
+  // NEW: Handler for when the user confirms share
+  async function handleShareConfirm() {
+    if (!shareData || !publicKey) return;
+    // Track share in the database
+    await fetch(`${API_URL}/api/share`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        wallet: publicKey.toString(),
+        game: shareData.game,
+        score: shareData.score,
+        timestamp: Date.now(),
+      }),
+    });
+
+    // Build tweet text and URL
+    const tweetText = encodeURIComponent(
+      `I just scored ${shareData.score} in ${shareData.game}! fentsports.win - Play now for rewards!`
+    );
+    // Twitter web intent expects hashtags as a comma-separated list without the '#' symbol
+    const hashtags = "pumpfun,memecoins,solana,georgefloyd,BLM";
+    // We're including fentsports.win as the URL parameter so that if you set up Twitter Cards on that site, the correct placard appears
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(
+      "https://fentsports.win"
+    )}&hashtags=${hashtags}`;
+
+    window.open(twitterUrl, "_blank", "noopener,noreferrer");
+    setShowShareConfirm(false);
+  }
 
   return (
     <div className="relative">
@@ -253,6 +308,23 @@ function Home() {
             setShowOfflineWarning(false);
             setPendingGameUrl(null);
           }}
+        />
+      )}
+      {/* NEW: Render the bouncing Share on Twitter button if shareData exists */}
+      {shareData && (
+        <button
+          onClick={() => setShowShareConfirm(true)}
+          className="animate-bounce font-silkscreen text-white hover:text-[#ff2975] transition-colors mt-4"
+        >
+          Share on Twitter
+        </button>
+      )}
+      {/* NEW: Render confirmation modal when needed */}
+      {showShareConfirm && (
+        <ShareConfirmModal
+          message="Share your score on Twitter?"
+          onConfirm={handleShareConfirm}
+          onCancel={() => setShowShareConfirm(false)}
         />
       )}
     </div>
