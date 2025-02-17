@@ -16,7 +16,10 @@ export function UserRegistrationModal({ onComplete }: UserRegistrationModalProps
   const buttonLabel = inputName.length > 0 ? "Enter" : "Skip";
 
   const handleSubmit = async () => {
-    if (!publicKey) return;
+    if (!publicKey) {
+      console.error("No wallet connected.");
+      return;
+    }
     
     setLoading(true);
     const walletAddress = publicKey.toBase58();
@@ -33,12 +36,18 @@ export function UserRegistrationModal({ onComplete }: UserRegistrationModalProps
       
       if (trimmedName.length > 0) {
         // Normal flow: require signature when a real name is provided.
-        if (!signMessage) return;
+        if (!signMessage) {
+          console.error("Wallet does not support signMessage. Registration cannot proceed.");
+          setLoading(false);
+          return;
+        }
         
         const registrationMessage = `Register:${walletAddress},Name:${finalName},Timestamp:${timestamp}`;
         const messageBytes = new TextEncoder().encode(registrationMessage);
+        console.log("Requesting signature for registration message:", registrationMessage);
         const signatureBytes = await signMessage(messageBytes);
         const signature = bs58.encode(signatureBytes);
+        console.log("Received signature:", signature);
         
         response = await fetch(`${API_URL}/api/register`, {
           method: "POST",
@@ -67,7 +76,7 @@ export function UserRegistrationModal({ onComplete }: UserRegistrationModalProps
       }
       
       if (!response.ok) {
-        console.error("Registration failed");
+        console.error("Registration failed", await response.text());
       } else {
         console.log("Registration successful");
         // Store auth token consistently for both flows
