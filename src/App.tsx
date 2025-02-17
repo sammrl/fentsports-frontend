@@ -227,13 +227,13 @@ function Home() {
 
     // Build tweet text and URL
     const tweetText = encodeURIComponent(
-      `I just scored ${shareData.score} in ${shareData.game}! fentsports.win - Play now for rewards!`
+      `I just scored ${shareData.score} in ${shareData.game}! fentsports.netlify.app - Play now for rewards!`
     );
     // Twitter web intent expects hashtags as a comma-separated list without the '#' symbol
     const hashtags = "pumpfun,memecoins,solana,georgefloyd,BLM";
-    // We're including fentsports.win as the URL parameter so that if you set up Twitter Cards on that site, the correct placard appears
+    // We're including fentsports.netlify.app as the URL parameter so that if you set up Twitter Cards on that site, the correct placard appears
     const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(
-      "https://fentsports.win"
+      "https://fentsports.netlify.app"
     )}&hashtags=${hashtags}`;
 
     window.open(twitterUrl, "_blank", "noopener,noreferrer");
