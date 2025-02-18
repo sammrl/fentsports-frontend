@@ -274,7 +274,8 @@ function Home() {
     );
     const hashtags = "pumpfun,memecoins,solana,georgefloyd,BLM";
     
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent("https://fentsports.netlify.app")}&hashtags=${hashtags}`;
+    // Make sure this matches where your meta tags are hosted
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent("https://fentsports.win")}&hashtags=${hashtags}`;
 
     window.open(twitterUrl, "_blank", "noopener,noreferrer");
     setShowShareConfirm(false);
