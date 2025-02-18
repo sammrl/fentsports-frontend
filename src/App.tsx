@@ -197,13 +197,11 @@ function Home() {
 
   // Remove the handleMessage from handleGameSelect
   const handleGameSelect = async (gameKey: string) => {
-    console.log("Selected game:", gameKey);
-    const selectedGame = games[gameKey];
+    // Clear any existing share data when starting new game
+    setShareData(null);
 
-    if (!selectedGame) {
-      console.error("Game not found:", gameKey);
-      return;
-    }
+    const selectedGame = games[gameKey];
+    if (!selectedGame) return;
 
     if (!publicKey || !signMessage) {
       console.log("Wallet not connected or signMessage not available");
@@ -232,7 +230,6 @@ function Home() {
       const { sessionToken: newSessionToken } = await sessionResponse.json();
       setSessionToken(newSessionToken);
       setSelectedGameUrl(selectedGame.url);
-      setShareData(null);
     } catch (error) {
       console.error("Error starting game session:", error);
       setSelectedGameUrl(selectedGame.url);
@@ -287,7 +284,7 @@ function Home() {
   window.getSessionToken = () => sessionToken;
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ "--share-button-offset": "0px" } as React.CSSProperties}>
       <HeaderBar />
       <RetroGrid />
       {showRegistrationModal && isRegistered === false && (
@@ -330,7 +327,7 @@ function Home() {
       {shareData && (
         <button
           onClick={() => setShowShareConfirm(true)}
-          className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] animate-bounce px-3 py-1.5 text-sm font-silkscreen bg-gradient-to-br from-[#ff2975] to-[#8c1eff] text-white rounded-lg cursor-pointer"
+          className="fixed bottom-10 left-[calc(50%+var(--share-button-offset,0px))] transform -translate-x-1/2 z-[9999] animate-bounce px-3 py-1.5 text-sm font-silkscreen bg-gradient-to-br from-[#ff2975] to-[#8c1eff] text-white rounded-lg cursor-pointer"
         >
           Share on X
         </button>
