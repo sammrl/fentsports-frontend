@@ -15,6 +15,16 @@ import jwt from "jsonwebtoken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+// NEW helper function to decode a JWT token
+function decodeJWT(token: string) {
+  try {
+    return jwt.decode(token);
+  } catch (e) {
+    console.error("Error decoding JWT:", e);
+    return null;
+  }
+}
+
 function Home() {
   const [selectedGameUrl, setSelectedGameUrl] = useState<string | null>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
