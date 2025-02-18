@@ -11,14 +11,26 @@ import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
 import { OfflineWarningModal } from "./components/OfflineWarningModal";
 import { ShareConfirmModal } from "./components/ShareConfirmModal";
-import jwt from "jsonwebtoken";
+import { JwtPayload } from 'jsonwebtoken';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// NEW helper function to decode a JWT token
-function decodeJWT(token: string) {
+// Add this type declaration for window.getSessionToken
+declare global {
+  interface Window {
+    getSessionToken: () => string | null;
+  }
+}
+
+// Update the decodeJWT function to handle the token as a base64 string
+function decodeJWT(token: string): JwtPayload | null {
   try {
-    return jwt.decode(token);
+    // Split the token and get the payload part (second part)
+    const base64Payload = token.split('.')[1];
+    // Decode the base64 string
+    const payload = Buffer.from(base64Payload, 'base64').toString('utf8');
+    // Parse the JSON
+    return JSON.parse(payload);
   } catch (e) {
     console.error("Error decoding JWT:", e);
     return null;
@@ -26,10 +38,10 @@ function decodeJWT(token: string) {
 }
 
 function Home() {
-  const [selectedGameUrl, setSelectedGameUrl] = useState<string | null>(null);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [selectedGameUrl, setSelectedGameUrl] = useState(null);
+  const [sessionToken, setSessionToken] = useState(null);
   const [showOfflineWarning, setShowOfflineWarning] = useState(false);
-  const [pendingGameUrl, setPendingGameUrl] = useState<string | null>(null);
+  const [pendingGameUrl, setPendingGameUrl] = useState(null);
   const { publicKey, signMessage } = useWallet();
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [isRegistered, setIsRegistered] = useState<boolean | null>(null);

@@ -31,6 +31,7 @@
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.0",
     "@esbuild-plugins/node-modules-polyfill": "^0.1.0",
+    "@types/jsonwebtoken": "^9.0.8",
     "@vitejs/plugin-react": "^2.0.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.21",
