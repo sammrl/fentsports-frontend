@@ -232,6 +232,7 @@ function Home() {
       const { sessionToken: newSessionToken } = await sessionResponse.json();
       setSessionToken(newSessionToken);
       setSelectedGameUrl(selectedGame.url);
+      setShareData(null);
     } catch (error) {
       console.error("Error starting game session:", error);
       setSelectedGameUrl(selectedGame.url);
@@ -329,9 +330,9 @@ function Home() {
       {shareData && (
         <button
           onClick={() => setShowShareConfirm(true)}
-          className="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-[9999] animate-bounce px-4 py-2 text-xl font-silkscreen bg-gradient-to-br from-[#ff2975] to-[#8c1eff] text-white rounded cursor-pointer"
+          className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-[9999] animate-bounce px-3 py-1.5 text-sm font-silkscreen bg-gradient-to-br from-[#ff2975] to-[#8c1eff] text-white rounded-lg cursor-pointer"
         >
-          Share on Twitter
+          Share on X
         </button>
       )}
       {/* NEW: Render confirmation modal when needed */}
