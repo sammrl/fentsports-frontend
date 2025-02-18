@@ -85,7 +85,18 @@ function Home() {
       });
 
       // For local development, add extra allowed origins
-      const allowedOrigins = [...gameUrls, 'null', 'http://localhost', 'http://localhost:3000'];
+      const allowedOrigins = [
+        "https://fentsports.win",
+        "https://www.fentsports.win",
+        "http://fentsports.win",
+        "http://www.fentsports.win",
+        "https://effortless-marshmallow-2f2b8c.netlify.app",
+        "https://eloquent-cascaron-0d6d10.netlify.app",
+        "https://delicate-fox-bec4e2.netlify.app",
+        "http://localhost:5173",
+        "http://localhost:10000",
+        "null"
+      ];
       if (!allowedOrigins.includes(event.origin)) {
         console.error('Rejected message from invalid origin:', event.origin, 'Allowed origins:', allowedOrigins);
         return;
