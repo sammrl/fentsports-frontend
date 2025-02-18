@@ -25,12 +25,16 @@ declare global {
 // Update the decodeJWT function to handle the token as a base64 string
 function decodeJWT(token: string): JwtPayload | null {
   try {
-    // Split the token and get the payload part (second part)
+    // Split the token to get the payload (the second part)
     const base64Payload = token.split('.')[1];
-    // Decode the base64 string
-    const payload = Buffer.from(base64Payload, 'base64').toString('utf8');
-    // Parse the JSON
-    return JSON.parse(payload);
+    // Decode the base64 payload using the browser's atob function
+    const jsonPayload = decodeURIComponent(
+      atob(base64Payload)
+        .split('')
+        .map(c => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
   } catch (e) {
     console.error("Error decoding JWT:", e);
     return null;
