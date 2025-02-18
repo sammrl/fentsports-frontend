@@ -11,14 +11,9 @@ import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
 import { OfflineWarningModal } from "./components/OfflineWarningModal";
 import { ShareConfirmModal } from "./components/ShareConfirmModal";
+import jwt from "jsonwebtoken";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-const GAME_SECRETS: Record<string, string> = {
-  FentMan: import.meta.env.VITE_FENTMAN_SECRET || "default_secret_1",
-  FentFall: import.meta.env.VITE_FENTFALL_SECRET || "default_secret_2",
-  FentaPiller: import.meta.env.VITE_FENTAPILLER_SECRET || "default_secret_3",
-};
 
 function Home() {
   const [selectedGameUrl, setSelectedGameUrl] = useState<string | null>(null);
@@ -127,7 +122,7 @@ function Home() {
         try {
           const timestamp = Date.now();
           const score = event.data.score;
-          const game = event.data.game || Object.keys(games).find(key => games[key].url.includes(event.origin)) || "";
+          const game = event.data.game || Object.keys(games).find(key => games[key].name === event.data.game);
           
           console.log("Preparing score submission:", { game, score, wallet: walletAddress });
 
@@ -261,6 +256,9 @@ function Home() {
     setShowShareConfirm(false);
   }
 
+  // Expose session token to games
+  window.getSessionToken = () => sessionToken;
+
   return (
     <div className="relative">
       <HeaderBar />
@@ -335,13 +333,3 @@ function App() {
 }
 
 export default App;
-
-function decodeJWT(token: string) {
-  try {
-    const payload = token.split('.')[1];
-    return JSON.parse(atob(payload));
-  } catch (error) {
-    console.error("Error decoding JWT:", error);
-    return null;
-  }
-}
