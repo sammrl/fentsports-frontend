@@ -11,6 +11,7 @@ import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
 import { OfflineWarningModal } from "./components/OfflineWarningModal";
 import { ShareConfirmModal } from "./components/ShareConfirmModal";
+import jwt from "jsonwebtoken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -103,6 +104,15 @@ function Home() {
           return;
         }
 
+        // Add game-specific validation
+        if (event.data.game) {
+          const sessionGame = sessionToken ? jwt.decode(sessionToken)?.game : null;
+          if (sessionGame !== event.data.game) {
+            console.error("Game mismatch between session and score submission");
+            return;
+          }
+        }
+
         const walletAddress = publicKey.toBase58();
         try {
           const timestamp = Date.now();
@@ -180,6 +190,7 @@ function Home() {
         body: JSON.stringify({
           wallet: publicKey.toString(),
           game: gameKey,
+          origin: window.location.origin
         }),
       });
 
