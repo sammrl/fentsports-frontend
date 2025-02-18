@@ -238,19 +238,22 @@ function Home() {
 
   // NEW: Function to get the placard image URL based on game key
   function getPlacardForGame(game: string): string {
-    if (game === "FentMan") {
-      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame1.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
-    } else if (game === "FentFall") {
-      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame2.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
-    } else if (game === "FentaPiller") {
-      return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame3.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+    switch (game) {
+      case "FentMan":
+        return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame1.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+      case "FentFall":
+        return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame2.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+      case "FentaPiller":
+        return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame3.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
+      default:
+        return "https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/twitter%2Fxgame1.png?alt=media&token=40b0202b-961b-41ea-a0f6-1b1f5dc11882";
     }
-    return "";
   }
 
   // NEW: Handler for when the user confirms share
   async function handleShareConfirm() {
     if (!shareData || !publicKey) return;
+
     // Track share in the database
     await fetch(`${API_URL}/api/share`, {
       method: "POST",
@@ -267,14 +270,11 @@ function Home() {
 
     // Build tweet text and URL
     const tweetText = encodeURIComponent(
-      `I just scored ${shareData.score} in ${shareData.game}! fentsports.netlify.app - Play now for rewards!`
+      `I just scored ${shareData.score} in ${shareData.game}! Play now for rewards!`
     );
-    // Twitter web intent expects hashtags as a comma-separated list without the '#' symbol
     const hashtags = "pumpfun,memecoins,solana,georgefloyd,BLM";
-    // We're including fentsports.netlify.app as the URL parameter so that if you set up Twitter Cards on that site, the correct placard appears
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent(
-      "https://fentsports.netlify.app"
-    )}&hashtags=${hashtags}`;
+    
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodeURIComponent("https://fentsports.netlify.app")}&hashtags=${hashtags}`;
 
     window.open(twitterUrl, "_blank", "noopener,noreferrer");
     setShowShareConfirm(false);
