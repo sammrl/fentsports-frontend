@@ -11,7 +11,6 @@ import bs58 from "bs58";
 import { UserRegistrationModal } from "./components/UserRegistrationModal";
 import { OfflineWarningModal } from "./components/OfflineWarningModal";
 import { ShareConfirmModal } from "./components/ShareConfirmModal";
-import jwt from "jsonwebtoken";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -117,7 +116,7 @@ function Home() {
 
         // Add game-specific validation
         if (event.data.game) {
-          const sessionGame = sessionToken ? jwt.decode(sessionToken)?.game : null;
+          const sessionGame = sessionToken ? decodeJWT(sessionToken)?.game : null;
           if (sessionGame !== event.data.game) {
             console.error("Game mismatch between session and score submission");
             return;
@@ -336,3 +335,13 @@ function App() {
 }
 
 export default App;
+
+function decodeJWT(token: string) {
+  try {
+    const payload = token.split('.')[1];
+    return JSON.parse(atob(payload));
+  } catch (error) {
+    console.error("Error decoding JWT:", error);
+    return null;
+  }
+}
