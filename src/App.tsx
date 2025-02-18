@@ -307,7 +307,8 @@ function Home() {
           gameUrl={selectedGameUrl}
           onClose={() => {
             setSelectedGameUrl(null);
-            setSessionToken(null); 
+            setSessionToken(null);
+            setShareData(null);
           }}
         />
       )}
@@ -324,25 +325,11 @@ function Home() {
           }}
         />
       )}
-      {/* UPDATED: Render share button positioned at the bottom center on top of game window */}
+      {/* UPDATED: Render share button fixed at the bottom center with bounce animation */}
       {shareData && (
         <button
           onClick={() => setShowShareConfirm(true)}
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 9999, // bring the button to the front
-            padding: "10px 20px",
-            fontSize: "18px",
-            fontFamily: "silkscreen",
-            background: "linear-gradient(135deg, #ff2975, #8c1eff)",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer"
-          }}
+          className="fixed bottom-5 left-1/2 transform -translate-x-1/2 z-[9999] animate-bounce px-4 py-2 text-xl font-silkscreen bg-gradient-to-br from-[#ff2975] to-[#8c1eff] text-white rounded cursor-pointer"
         >
           Share on Twitter
         </button>
