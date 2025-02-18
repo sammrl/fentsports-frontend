@@ -324,11 +324,25 @@ function Home() {
           }}
         />
       )}
-      {/* NEW: Render the bouncing Share on Twitter button if shareData exists */}
+      {/* UPDATED: Render share button positioned at the bottom center on top of game window */}
       {shareData && (
         <button
           onClick={() => setShowShareConfirm(true)}
-          className="animate-bounce font-silkscreen text-white hover:text-[#ff2975] transition-colors mt-4"
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999, // bring the button to the front
+            padding: "10px 20px",
+            fontSize: "18px",
+            fontFamily: "silkscreen",
+            background: "linear-gradient(135deg, #ff2975, #8c1eff)",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer"
+          }}
         >
           Share on Twitter
         </button>
