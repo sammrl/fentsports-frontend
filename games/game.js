@@ -12,7 +12,7 @@ class JsPacman extends Game {
     Object.assign(this.shareButton.style, {
       position: "absolute",
       bottom: "20px",
-      left: "50%",
+      left: "40%",
       transform: "translateX(-50%)",
       zIndex: "1000",
       padding: "10px 20px",
@@ -51,5 +51,10 @@ class JsPacman extends Game {
     // ... your existing game-over logic ...
 
     this.showShareButton();
+  }
+
+  restartGame() {
+    this.clearShareButton();
+    this.startLevel();
   }
 } 
