@@ -8,11 +8,12 @@ class JsPacman extends Game {
     if (this.shareButton) return;
 
     this.shareButton = document.createElement("button");
+    this.shareButton.id = "share-button";
     this.shareButton.innerText = "Share on Twitter";
     Object.assign(this.shareButton.style, {
       position: "absolute",
       bottom: "20px",
-      left: "40%",
+      left: "20%",
       transform: "translateX(-50%)",
       zIndex: "1000",
       padding: "10px 20px",
@@ -40,6 +41,11 @@ class JsPacman extends Game {
     if (this.shareButton) {
       this.shareButton.remove();
       this.shareButton = null;
+    } else {
+      const existingButton = document.getElementById("share-button");
+      if (existingButton) {
+        existingButton.remove();
+      }
     }
   }
 
