@@ -1,5 +1,5 @@
 // src/components/GameModal.tsx
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 export interface GameModalProps {
   gameUrl: string;
@@ -8,6 +8,41 @@ export interface GameModalProps {
 
 export function GameModal({ gameUrl, onClose }: GameModalProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Function to handle share button
+  const handleShareButton = () => {
+    const iframe = iframeRef.current;
+    if (iframe && iframe.contentDocument) {
+      const shareButton = iframe.contentDocument.getElementById('share-button');
+      if (shareButton) {
+        // First try to reposition the button
+        Object.assign(shareButton.style, {
+          left: '15%',  // Move it further left
+          transform: 'translateX(-50%)'
+        });
+        // Then remove it if game is restarting
+        shareButton.remove();
+      }
+    }
+  };
+
+  // Listen for game restart events or clicks within the iframe
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (iframe) {
+      iframe.addEventListener('load', () => {
+        if (iframe.contentDocument) {
+          iframe.contentDocument.addEventListener('click', handleShareButton);
+        }
+      });
+    }
+
+    return () => {
+      if (iframe && iframe.contentDocument) {
+        iframe.contentDocument.removeEventListener('click', handleShareButton);
+      }
+    };
+  }, []);
 
   return (
     <div
