@@ -91,6 +91,12 @@ function Home() {
 
   useEffect(() => {
     const handleMessage = async (event: MessageEvent) => {
+      // Add this at the start of the handler
+      if (event.data?.type === "GAME_STARTED") {
+        setShareData(null);
+        return;
+      }
+      
       // Log the received event so we know if the game is posting messages at all
       console.log("Received message event:", { origin: event.origin, data: event.data });
 
