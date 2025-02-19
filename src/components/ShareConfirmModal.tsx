@@ -37,13 +37,30 @@ export function ShareConfirmModal({ message, onConfirm, onCancel }: ShareConfirm
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
           <button
             onClick={onConfirm}
-            className="font-silkscreen text-white hover:text-[#ff2975] transition-colors"
+            style={{
+              background: "linear-gradient(135deg, #ff2975, #8c1eff)",
+              padding: "10px 20px",
+              border: "none",
+              borderRadius: "8px",
+              color: "#fff",
+              fontFamily: "silkscreen",
+              cursor: "pointer",
+            }}
+            className="hover:opacity-90 transition-opacity"
           >
             Yes, Share
           </button>
           <button
             onClick={onCancel}
-            className="font-silkscreen text-white hover:text-[#ff2975] transition-colors"
+            style={{
+              background: "transparent",
+              border: "none",
+              padding: "10px 20px",
+              cursor: "pointer",
+              fontFamily: "silkscreen",
+              color: "#fff",
+            }}
+            className="hover:text-[#ff2975] transition-colors"
           >
             Cancel
           </button>
