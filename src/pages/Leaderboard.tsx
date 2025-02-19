@@ -167,34 +167,45 @@ export function Leaderboard() {
                       </tr>
                     ) : null
                   )}
-                  {displayScores.map((entry, idx) => (
-                    <tr key={idx} className="border-b border-white/10 hover:bg-white/5">
-                      <td className="px-6 py-4 font-silkscreen text-white">
-                        {viewMode === "current" ? (
-                          idx < 10 ? (
-                            <span className="inline-flex items-center">
-                              <img
-                                src="https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fsymbol.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f"
-                                alt="symbol"
-                                className="w-4 h-4 mx-2"
-                              />
-                              <span className="w-10 block text-right">{idx + 1}</span>
-                            </span>
+                  {displayScores.map((entry, idx) => {
+                    // Check if this score belongs to the connected user.
+                    const isCurrentUser =
+                      publicKey && entry.wallet === publicKey.toBase58();
+                    return (
+                      <tr
+                        key={entry.wallet + idx}
+                        className={`border-b border-white/10 hover:bg-white/5 ${
+                          isCurrentUser 
+                            ? "bg-gradient-to-br from-[#ff2975]/30 to-[#8c1eff]/30" 
+                            : "bg-gray-800"}`}
+                      >
+                        <td className="px-6 py-4 font-silkscreen text-white">
+                          {viewMode === "current" ? (
+                            idx < 10 ? (
+                              <span className="inline-flex items-center">
+                                <img
+                                  src="https://firebasestorage.googleapis.com/v0/b/fentsports-a8133.firebasestorage.app/o/fentsports-site%2Fsymbol.png?alt=media&token=9d74cb35-3808-4c37-9b77-8e56f46d9e1f"
+                                  alt="symbol"
+                                  className="w-4 h-4 mx-2"
+                                />
+                                <span className="w-10 block text-right">{idx + 1}</span>
+                              </span>
+                            ) : (
+                              <span className="block text-right w-10">{idx + 1}</span>
+                            )
                           ) : (
                             <span className="block text-right w-10">{idx + 1}</span>
-                          )
-                        ) : (
-                          <span className="block text-right w-10">{idx + 1}</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 font-silkscreen text-white">
-                        {entry.name ? entry.name : `${entry.wallet.slice(0, 6)}...`}
-                      </td>
-                      <td className="px-6 py-4 font-silkscreen text-white text-right">
-                        {entry.score}
-                      </td>
-                    </tr>
-                  ))}
+                          )}
+                        </td>
+                        <td className="px-6 py-4 font-silkscreen text-white">
+                          {entry.name ? entry.name : `${entry.wallet.slice(0, 6)}...`}
+                        </td>
+                        <td className="px-6 py-4 font-silkscreen text-white text-right">
+                          {entry.score}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
