@@ -31,15 +31,18 @@ export function GameModal({ gameUrl, onClose }: GameModalProps) {
     const iframe = iframeRef.current;
     if (iframe) {
       iframe.addEventListener('load', () => {
-        if (iframe.contentDocument) {
-          iframe.contentDocument.addEventListener('click', handleShareButton);
-        }
+        // Wait 5 seconds after the iframe fully loads
+        setTimeout(() => {
+          if (iframe.contentDocument) {
+            handleShareButton();
+          }
+        }, 5000);
       });
     }
 
     return () => {
       if (iframe && iframe.contentDocument) {
-        iframe.contentDocument.removeEventListener('click', handleShareButton);
+        // If you had added any event listeners, remove them here.
       }
     };
   }, []);
